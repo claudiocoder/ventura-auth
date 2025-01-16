@@ -1,9 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { RegisterUserDto } from './dto';
+import { RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class AuthService {
   async registerUser(registerUserDto: RegisterUserDto) {
-    console.log('Registering user...', registerUserDto);
+    try {
+      // Register user
+      return { data: { ...registerUserDto } };
+    } catch (error) {
+      throw new RpcException({ status: 400, message: error.message });
+    }
   }
 }
