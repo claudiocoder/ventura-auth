@@ -2,7 +2,6 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { PrismaClient } from '@prisma/client';
 import { RegisterUserDto } from './dto';
-import { hashSync } from 'bcrypt';
 
 @Injectable()
 export class AuthService extends PrismaClient implements OnModuleInit {
@@ -14,19 +13,18 @@ export class AuthService extends PrismaClient implements OnModuleInit {
   }
 
   async registerUser(registerUserDto: RegisterUserDto) {
-    const { email, password, name } = registerUserDto;
+    const { clerkId, email, firstName, lastName, imageUrl } = registerUserDto;
     try {
-      const user = await this.user.findUnique({ where: { email } });
+      const user = await this.user.findUnique({ where: { clerkId } });
       if (user) {
         throw new RpcException({ status: 400, message: 'User already exists' });
       }
       const newUser = await this.user.create({
-        data: { email, name, password: hashSync(password, 10) },
+        data: { clerkId, email, firstName, lastName, imageUrl },
       });
-      const { password: __, ...userWithoutPassword } = newUser;
 
       return {
-        user: userWithoutPassword,
+        user: newUser,
       };
     } catch (error) {
       throw new RpcException({ status: 400, message: error.message });
